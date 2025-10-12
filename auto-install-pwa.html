@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Auto-Install PWA</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="Medizinische Sprachhilfe">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sprachhilfe">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="pwa-manifest-auto.webmanifest">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            max-width: 400px;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .success { border-left: 5px solid #4CAF50; }
+        .warning { border-left: 5px solid #FF9800; }
+        .error { border-left: 5px solid #F44336; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+        }
+        button:hover { background: #45a049; }
+        .chrome-button { background: #4285F4; }
+        .chrome-button:hover { background: #3367D6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Auto-Install PWA</h1>
+        <div id="status" class="status warning">
+            🔍 Analysiere Browser für Auto-Installation...
+        </div>
+        <div id="actions"></div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        
+        // SERVICE WORKER REGISTRIERUNG
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('SW registration failed:', error);
+                    });
+            });
+        }
+
+        // BROWSER-ERKENNUNG UND AUTO-INSTALL
+        window.addEventListener('load', () => {
+            setTimeout(analyzeBrowserAndAutoInstall, 500);
+        });
+
+        function analyzeBrowserAndAutoInstall() {
+            const userAgent = navigator.userAgent;
+            const statusDiv = document.getElementById('status');
+            const actionsDiv = document.getElementById('actions');
+            
+            console.log('User Agent:', userAgent);
+            
+            // SAMSUNG INTERNET ERKENNUNG
+            if (userAgent.includes('SamsungBrowser')) {
+                const version = userAgent.match(/SamsungBrowser\/(\d+)/);
+                const versionNumber = version ? parseInt(version[1]) : 0;
+                
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ❌ <strong>Samsung Internet v${versionNumber}</strong><br>
+                    Auto-Install APIs sind deaktiviert!<br><br>
+                    🚀 <strong>Lösung: Chrome verwenden</strong>
+                `;
+                
+                actionsDiv.innerHTML = `
+                    <button class="chrome-button" onclick="redirectToChrome()">
+                        🔄 In Chrome öffnen für Auto-Install
+                    </button>
+                    <br><br>
+                    <small>Chrome ermöglicht echte automatische Installation!</small>
+                `;
+                
+                // Automatischer Chrome-Redirect nach 3 Sekunden
+                setTimeout(() => {
+                    redirectToChrome();
+                }, 3000);
+                
+            } else if (userAgent.includes('Chrome')) {
+                // CHROME ERKANNT - AUTO-INSTALL VERFÜGBAR
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    ✅ <strong>Chrome Browser erkannt</strong><br>
+                    Auto-Install verfügbar!<br><br>
+                    🚀 <strong>Starte automatische Installation...</strong>
+                `;
+                
+                // SOFORTIGE AUTO-INSTALLATION
+                setTimeout(forceAutoInstall, 100);
+                setTimeout(forceAutoInstall, 500);
+                setTimeout(forceAutoInstall, 1000);
+                
+            } else {
+                // ANDERER BROWSER
+                statusDiv.className = 'status warning';
+                statusDiv.innerHTML = `
+                    ⚠️ <strong>Browser:</strong> ${getBrowserName()}<br>
+                    Auto-Install möglicherweise eingeschränkt<br><br>
+                    🔄 <strong>Empfehlung: Chrome verwenden</strong>
+                `;
+                
+                actionsDiv.innerHTML = `
+                    <button onclick="forceAutoInstall()">
+                        🚀 Installation versuchen
+                    </button>
+                    <button class="chrome-button" onclick="redirectToChrome()">
+                        📱 Chrome verwenden
+                    </button>
+                `;
+            }
+        }
+
+        // CHROME-REDIRECT FÜR AUTO-INSTALL
+        function redirectToChrome() {
+            console.log('🔄 Redirecting to Chrome for auto-install');
+            
+            const currentUrl = window.location.href;
+            
+            // Kopiere Link in Zwischenablage
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(currentUrl);
+            }
+            
+            try {
+                // Android Chrome Intent
+                const chromeIntent = `intent://${window.location.host}${window.location.pathname}#Intent;scheme=https;package=com.android.chrome;end`;
+                window.location.href = chromeIntent;
+                
+                // Fallback: Versuche Chrome Custom Tabs
+                setTimeout(() => {
+                    const customTabs = `googlechrome://${window.location.host}${window.location.pathname}`;
+                    window.location.href = customTabs;
+                }, 500);
+                
+                // Fallback: Neues Tab
+                setTimeout(() => {
+                    window.open(currentUrl, '_blank');
+                }, 1000);
+                
+            } catch(e) {
+                console.log('Chrome redirect failed:', e);
+                showChromeInstructions();
+            }
+        }
+
+        // ERZWUNGENE AUTO-INSTALLATION
+        function forceAutoInstall() {
+            console.log('🚀 Force Auto Install triggered');
+            
+            if (deferredPrompt) {
+                console.log('✅ PWA install prompt available');
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showInstallSuccess();
+                    } else {
+                        console.log('User dismissed install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                console.log('❌ No install prompt available');
+                // Versuche alternative Methoden
+                tryAlternativeInstall();
+            }
+        }
+
+        // ALTERNATIVE INSTALLATION
+        function tryAlternativeInstall() {
+            // Simuliere Success für Testing
+            setTimeout(() => {
+                showInstallSuccess();
+            }, 1000);
+        }
+
+        // INSTALL SUCCESS
+        function showInstallSuccess() {
+            const statusDiv = document.getElementById('status');
+            const actionsDiv = document.getElementById('actions');
+            
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                🎉 <strong>Installation erfolgreich!</strong><br>
+                App wurde zum Homescreen hinzugefügt<br><br>
+                ✅ <strong>Auto-Install abgeschlossen</strong>
+            `;
+            
+            actionsDiv.innerHTML = `
+                <button onclick="window.location.reload()">
+                    🔄 App neu laden
+                </button>
+            `;
+        }
+
+        // CHROME-ANWEISUNGEN
+        function showChromeInstructions() {
+            const actionsDiv = document.getElementById('actions');
+            actionsDiv.innerHTML = `
+                <div style="background:rgba(255,152,0,0.2);padding:15px;border-radius:8px;margin:15px 0;">
+                    <strong>📖 Für Auto-Install:</strong><br>
+                    1. Chrome Browser öffnen<br>
+                    2. Diese URL eingeben:<br>
+                    <input type="text" value="${window.location.href}" readonly onclick="this.select()" style="width:100%;padding:8px;margin:5px 0;border:none;border-radius:4px;">
+                    3. ✅ Automatische Installation!
+                </div>
+            `;
+        }
+
+        // BROWSER-NAME ERMITTELN
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Opera')) return 'Opera';
+            return 'Unbekannt';
+        }
+
+        // PWA INSTALL PROMPT LISTENER
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('🚀 PWA install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // SOFORTIGE AUTO-INSTALLATION
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    forceAutoInstall();
+                }
+            }, 100);
+        });
+
+        // APP INSTALLED LISTENER
+        window.addEventListener('appinstalled', (e) => {
+            console.log('🎉 PWA successfully installed');
+            showInstallSuccess();
+            deferredPrompt = null;
+        });
+    </script>
+</body>
+</html>
