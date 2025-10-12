@@ -4175,24 +4175,154 @@
             function executeAggressiveAutoInstall(browserType) {
                 console.log(`🚀 Aggressive Auto-Install für ${browserType}`);
                 
+                // SOFORTIGE STATUS-ANZEIGE
+                const statusDiv = document.createElement('div');
+                statusDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(33, 150, 243, 0.95);
+                    color: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    text-align: center;
+                    font-weight: bold;
+                    z-index: 60000;
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                `;
+                statusDiv.innerHTML = `
+                    🚀 <strong>AUTO-INSTALLATION LÄUFT...</strong><br><br>
+                    <div id="install-progress">Suche Install-Prompt...</div><br>
+                    <div style="font-size:12px;opacity:0.8;">Browser: ${browserType}</div>
+                `;
+                document.body.appendChild(statusDiv);
+                
                 let attempts = 0;
+                let progressElement = document.getElementById('install-progress');
+                
+                function updateProgress(message) {
+                    if (progressElement) {
+                        progressElement.innerHTML = message;
+                    }
+                    console.log(`📊 Progress: ${message}`);
+                }
+                
                 function attemptInstall() {
                     attempts++;
-                    if (deferredPrompt && attempts <= 3) {
+                    updateProgress(`Versuch ${attempts}/5: Warte auf Install-Prompt...`);
+                    
+                    console.log(`🔄 Install-Versuch ${attempts}/5`);
+                    console.log('deferredPrompt verfügbar:', !!deferredPrompt);
+                    
+                    if (deferredPrompt && attempts <= 5) {
+                        updateProgress(`Install-Prompt gefunden! Starte Installation...`);
+                        
                         deferredPrompt.prompt();
                         deferredPrompt.userChoice.then((choiceResult) => {
+                            console.log('User choice result:', choiceResult);
+                            
                             if (choiceResult.outcome === 'accepted') {
-                                showUniversalInstallSuccess(browserType);
-                            } else if (attempts < 3) {
-                                setTimeout(attemptInstall, 1000);
+                                updateProgress('✅ Installation akzeptiert!');
+                                setTimeout(() => {
+                                    statusDiv.remove();
+                                    showUniversalInstallSuccess(browserType);
+                                }, 1000);
+                            } else {
+                                updateProgress(`❌ Installation abgelehnt - Versuch ${attempts + 1}...`);
+                                if (attempts < 5) {
+                                    setTimeout(attemptInstall, 1500);
+                                } else {
+                                    updateProgress('⚠️ Max. Versuche erreicht - Fallback...');
+                                    setTimeout(() => {
+                                        statusDiv.remove();
+                                        showInstallFallback(browserType);
+                                    }, 2000);
+                                }
                             }
                             deferredPrompt = null;
+                        }).catch(error => {
+                            console.log('Install prompt error:', error);
+                            updateProgress(`❌ Install-Fehler: ${error.message}`);
+                            setTimeout(attemptInstall, 1000);
                         });
-                    } else if (attempts <= 3) {
-                        setTimeout(attemptInstall, 500);
+                    } else if (attempts <= 5) {
+                        updateProgress(`Warte auf Install-Prompt... (${5 - attempts} verbleibend)`);
+                        setTimeout(attemptInstall, 800);
+                    } else {
+                        updateProgress('❌ Kein Install-Prompt verfügbar - Fallback...');
+                        setTimeout(() => {
+                            statusDiv.remove();
+                            showInstallFallback(browserType);
+                        }, 2000);
                     }
                 }
-                setTimeout(attemptInstall, 100);
+                
+                // SOFORTIGER ERSTER VERSUCH
+                setTimeout(attemptInstall, 200);
+                
+                // SICHERHEITS-TIMEOUT: Entferne Status nach 15 Sekunden
+                setTimeout(() => {
+                    if (statusDiv.parentNode) {
+                        updateProgress('⏰ Timeout erreicht - beende Installation...');
+                        setTimeout(() => {
+                            statusDiv.remove();
+                            showInstallFallback(browserType);
+                        }, 2000);
+                    }
+                }, 15000);
+            }
+            
+            // INSTALL FALLBACK wenn Auto-Install nicht funktioniert
+            function showInstallFallback(browserType) {
+                console.log(`🔄 Install Fallback für ${browserType}`);
+                
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(255, 152, 0, 0.95);
+                    color: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    text-align: center;
+                    font-weight: bold;
+                    z-index: 60000;
+                    max-width: 300px;
+                `;
+                fallbackDiv.innerHTML = `
+                    ⚠️ <strong>AUTO-INSTALL FALLBACK</strong><br><br>
+                    Chrome Menü (⋮) öffnen<br>
+                    → "App installieren" oder<br>
+                    → "Zum Startbildschirm hinzufügen"<br><br>
+                    <button onclick="this.parentNode.remove(); tryManualInstall()" style="background:#4CAF50;color:white;border:none;padding:10px 15px;border-radius:6px;margin-right:5px;">
+                        🔄 Erneut versuchen
+                    </button>
+                    <button onclick="this.parentNode.remove()" style="background:white;color:#FF9800;border:none;padding:10px 15px;border-radius:6px;">
+                        OK
+                    </button>
+                `;
+                document.body.appendChild(fallbackDiv);
+            }
+            
+            // MANUELLER INSTALL-VERSUCH
+            function tryManualInstall() {
+                console.log('🔧 Versuche manuellen Install-Trigger');
+                
+                // Versuche verfügbare Install-Events zu triggern
+                const installEvent = new Event('install');
+                window.dispatchEvent(installEvent);
+                
+                // Versuche beforeinstallprompt zu re-triggern
+                const beforeInstallEvent = new Event('beforeinstallprompt');
+                window.dispatchEvent(beforeInstallEvent);
+                
+                // Fallback: Standard forceInstallNow
+                setTimeout(() => {
+                    forceInstallNow();
+                }, 500);
             }
             
             function handleIPhoneAutoInstall() {
