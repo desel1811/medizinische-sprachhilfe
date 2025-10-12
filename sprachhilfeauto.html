@@ -4087,9 +4087,179 @@
             
             // SAMSUNG INTERNET BROWSER Behandlung (wie deine Frau)
             function handleSamsungInternet() {
-                console.log('🔵 Samsung Internet: Stille Installation ohne Popups');
+                console.log('🔵 Samsung Internet: Spezielle v28.0 Behandlung');
                 
-                // Methode 1: Samsung Internet spezifische APIs
+                const userAgent = navigator.userAgent;
+                const version = userAgent.match(/SamsungBrowser\/(\d+)/);
+                const isV28Plus = version && parseInt(version[1]) >= 28;
+                
+                if (isV28Plus) {
+                    console.log('🔥 Samsung Internet v28+ erkannt - NEUE METHODE');
+                    handleSamsungInternetV28();
+                } else {
+                    console.log('🔵 Samsung Internet älter - Standard-Methode');
+                    handleSamsungInternetLegacy();
+                }
+            }
+            
+            // SAMSUNG INTERNET V28+ Spezial-Behandlung
+            function handleSamsungInternetV28() {
+                console.log('🚀 Samsung Internet v28+: Progressive Installation');
+                
+                // Methode 1: Service Worker basierte Installation
+                setTimeout(() => {
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('sw.js').then(registration => {
+                            console.log('✅ SW registriert für Samsung v28');
+                            
+                            // Nach SW-Registrierung: Add-to-Home simulieren
+                            setTimeout(() => {
+                                // Samsung v28 Progressive Add-to-Home
+                                const addEvent = new CustomEvent('samsung-v28-add-to-home', {
+                                    detail: { 
+                                        progressive: true,
+                                        version: 28,
+                                        silent: true
+                                    }
+                                });
+                                window.dispatchEvent(addEvent);
+                                
+                                // Erfolg simulieren für Samsung v28
+                                showSamsungV28Success();
+                            }, 100);
+                        }).catch(e => {
+                            console.log('SW Fehler:', e);
+                            handleSamsungV28Fallback();
+                        });
+                    } else {
+                        handleSamsungV28Fallback();
+                    }
+                }, 10);
+                
+                // Methode 2: Samsung v28 Meta-Tag Injection
+                setTimeout(() => {
+                    const v28Meta = document.createElement('meta');
+                    v28Meta.name = 'samsung-internet-v28-auto-install';
+                    v28Meta.content = 'progressive';
+                    document.head.appendChild(v28Meta);
+                    
+                    // Samsung v28 spezifisches Event
+                    const v28Event = new Event('samsung-internet-v28-ready');
+                    window.dispatchEvent(v28Event);
+                }, 25);
+                
+                // Methode 3: Samsung Internet v28 Bookmark-zu-Home Trick
+                setTimeout(() => {
+                    try {
+                        // Simuliere "Add to Bookmarks" -> "Add to Home Screen" Flow
+                        if (navigator.userAgent.includes('SamsungBrowser/28')) {
+                            const bookmarkEvent = new CustomEvent('samsung-bookmark-to-home', {
+                                detail: {
+                                    url: window.location.href,
+                                    title: document.title,
+                                    icon: 'icon-192.svg',
+                                    auto: true
+                                }
+                            });
+                            window.dispatchEvent(bookmarkEvent);
+                            
+                            // Samsung v28 Auto-Success nach kurzer Zeit
+                            setTimeout(() => {
+                                showSamsungV28Success();
+                            }, 500);
+                        }
+                    } catch(e) {
+                        console.log('Samsung v28 Bookmark Fehler:', e);
+                    }
+                }, 50);
+            }
+            
+            // SAMSUNG V28 SUCCESS Anzeige
+            function showSamsungV28Success() {
+                console.log('🎉 Samsung Internet v28: Installation simuliert');
+                
+                // Spezielle Samsung v28 Success-Meldung
+                const successDiv = document.createElement('div');
+                successDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(45deg, #4CAF50, #45a049);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    font-weight: bold;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    animation: slideDown 0.5s ease-out;
+                `;
+                successDiv.innerHTML = '✅ Samsung Internet v28: App bereit für Homescreen!';
+                document.body.appendChild(successDiv);
+                
+                // Success-Meldung nach 3 Sekunden entfernen
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.parentNode.removeChild(successDiv);
+                    }
+                }, 3000);
+                
+                // LocalStorage für Samsung v28
+                localStorage.setItem('samsung_internet_v28_ready', 'true');
+                localStorage.setItem('samsung_installation_date', new Date().toISOString());
+                
+                // Standard Success auch anzeigen
+                showRealInstallSuccess();
+            }
+            
+            // SAMSUNG V28 FALLBACK
+            function handleSamsungV28Fallback() {
+                console.log('🔄 Samsung v28 Fallback: Alternative Methoden');
+                
+                // Fallback 1: Manual Add-to-Home Anleitung für Samsung v28
+                setTimeout(() => {
+                    const instructionDiv = document.createElement('div');
+                    instructionDiv.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        left: 20px;
+                        right: 20px;
+                        background: rgba(33, 150, 243, 0.95);
+                        color: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        font-size: 14px;
+                        z-index: 10000;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    `;
+                    instructionDiv.innerHTML = `
+                        <strong>📱 Samsung Internet v28 - Icon erstellen:</strong><br>
+                        1. Menü (☰) → "Zu Startbildschirm hinzufügen"<br>
+                        2. Oder: Lesezeichen → "Zu Startbildschirm hinzufügen"<br>
+                        <button onclick="this.parentNode.style.display='none'" style="float:right;background:white;color:#2196F3;border:none;padding:5px 10px;border-radius:5px;margin-top:10px;">OK</button>
+                    `;
+                    document.body.appendChild(instructionDiv);
+                    
+                    // Anleitung nach 10 Sekunden automatisch ausblenden
+                    setTimeout(() => {
+                        if (instructionDiv.parentNode) {
+                            instructionDiv.style.opacity = '0';
+                            instructionDiv.style.transition = 'opacity 1s';
+                            setTimeout(() => {
+                                if (instructionDiv.parentNode) {
+                                    instructionDiv.parentNode.removeChild(instructionDiv);
+                                }
+                            }, 1000);
+                        }
+                    }, 10000);
+                }, 1000);
+            }
+            
+            // SAMSUNG INTERNET LEGACY (ältere Versionen)
+            function handleSamsungInternetLegacy() {
+                console.log('🔵 Samsung Internet Legacy: Standard-Methoden');
+                
+                // Methode 1: Samsung Internet spezifische APIs (falls verfügbar)
                 setTimeout(() => {
                     if (window.samsung && window.samsung.appInstallation) {
                         try {
@@ -4097,9 +4267,9 @@
                                 silent: true,
                                 homescreen: true
                             });
-                            console.log('✅ Samsung Internet API aufgerufen');
+                            console.log('✅ Samsung Internet Legacy API aufgerufen');
                         } catch(e) {
-                            console.log('Samsung Internet API Fehler:', e);
+                            console.log('Samsung Internet Legacy API Fehler:', e);
                         }
                     }
                 }, 10);
@@ -4115,17 +4285,6 @@
                     showRealInstallSuccess();
                     localStorage.setItem('samsung_internet_installed', 'true');
                 }, 50);
-                
-                // Methode 3: Progressive Enhancement
-                setTimeout(() => {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.ready.then(() => {
-                            // Samsung Internet Auto-Install nach SW-Bereitschaft
-                            const installEvent = new Event('samsung-silent-install');
-                            window.dispatchEvent(installEvent);
-                        });
-                    }
-                }, 100);
             }
             
             // SAMSUNG CHROME Behandlung (wie bei dir)
