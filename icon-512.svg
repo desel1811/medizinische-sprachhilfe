@@ -1,0 +1,36 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hintergrund mit Gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  
+  <!-- Haupticon: Medizin + Sprache (größer) -->
+  <circle cx="256" cy="180" r="90" fill="white" opacity="0.95"/>
+  <rect x="215" y="139" width="82" height="82" rx="20" fill="#3498db"/>
+  
+  <!-- Kreuz (Medizin) - größer -->
+  <rect x="242" y="155" width="28" height="70" fill="white"/>
+  <rect x="221" y="176" width="70" height="28" fill="white"/>
+  
+  <!-- Sprechblase - größer -->
+  <ellipse cx="256" cy="350" rx="120" ry="70" fill="white"/>
+  <path d="M190 400 L220 440 L250 400" fill="white"/>
+  
+  <!-- Text in Sprechblase -->
+  <text x="256" y="375" font-family="Arial" font-size="42" font-weight="bold" fill="#3498db" text-anchor="middle">DE ⟷ EN</text>
+  
+  <!-- Dekorative Elemente -->
+  <circle cx="100" cy="100" r="20" fill="white" opacity="0.2"/>
+  <circle cx="412" cy="100" r="20" fill="white" opacity="0.2"/>
+  <circle cx="100" cy="412" r="20" fill="white" opacity="0.2"/>
+  <circle cx="412" cy="412" r="20" fill="white" opacity="0.2"/>
+  
+  <!-- Zusätzliche medizinische Symbole -->
+  <circle cx="150" cy="250" r="15" fill="white" opacity="0.4"/>
+  <circle cx="362" cy="250" r="15" fill="white" opacity="0.4"/>
+</svg>
