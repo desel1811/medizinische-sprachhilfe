@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Samsung Browser Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .warning {
+            border-left-color: #FF9800;
+            background: rgba(255,152,0,0.2);
+        }
+        .error {
+            border-left-color: #F44336;
+            background: rgba(244,67,54,0.2);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Samsung Browser Erkennungs-Test</h1>
+        <p>Dieser Test erkennt automatisch euren Samsung Browser und zeigt welche Methode verwendet werden sollte.</p>
+        
+        <button onclick="runBrowserTest()">🚀 Browser-Test starten</button>
+        <button onclick="testInstallCapabilities()">📱 Installation-Test</button>
+        <button onclick="copyResults()">📋 Ergebnisse kopieren</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let testResults = {};
+
+        function runBrowserTest() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="result">🔍 Analysiere Browser...</div>';
+            
+            setTimeout(() => {
+                const userAgent = navigator.userAgent;
+                const isSamsungInternet = userAgent.includes('SamsungBrowser');
+                const isSamsungChrome = userAgent.includes('Samsung') && userAgent.includes('Chrome') && !userAgent.includes('SamsungBrowser');
+                const isAndroidChrome = userAgent.includes('Android') && userAgent.includes('Chrome') && !userAgent.includes('Samsung');
+                const samsungVersion = userAgent.match(/SamsungBrowser\/(\d+\.?\d*)/);
+                const chromeVersion = userAgent.match(/Chrome\/(\d+\.?\d*)/);
+                const androidVersion = userAgent.match(/Android (\d+\.?\d*)/);
+                
+                testResults = {
+                    userAgent,
+                    isSamsungInternet,
+                    isSamsungChrome,
+                    isAndroidChrome,
+                    samsungVersion: samsungVersion ? samsungVersion[1] : null,
+                    chromeVersion: chromeVersion ? chromeVersion[1] : null,
+                    androidVersion: androidVersion ? androidVersion[1] : null,
+                    timestamp: new Date().toLocaleString('de-DE')
+                };
+                
+                let html = '<h2>📊 Browser-Analyse Ergebnisse:</h2>';
+                
+                if (isSamsungInternet) {
+                    html += '<div class="result">🔵 <strong>SAMSUNG INTERNET BROWSER</strong> erkannt<br>';
+                    html += `Version: ${samsungVersion ? samsungVersion[1] : 'unbekannt'}<br>`;
+                    html += '<strong>Empfohlene Methode:</strong> Stille Installation ohne Popups</div>';
+                } else if (isSamsungChrome) {
+                    html += '<div class="result warning">🔴 <strong>SAMSUNG CHROME</strong> erkannt<br>';
+                    html += `Chrome Version: ${chromeVersion ? chromeVersion[1] : 'unbekannt'}<br>`;
+                    html += '<strong>Empfohlene Methode:</strong> Popup-Unterdrückung + WebAPK</div>';
+                } else if (isAndroidChrome) {
+                    html += '<div class="result">🟢 <strong>STANDARD ANDROID CHROME</strong> erkannt<br>';
+                    html += `Chrome Version: ${chromeVersion ? chromeVersion[1] : 'unbekannt'}<br>`;
+                    html += '<strong>Empfohlene Methode:</strong> Standard PWA Installation</div>';
+                } else {
+                    html += '<div class="result error">❓ <strong>UNBEKANNTER BROWSER</strong><br>';
+                    html += '<strong>Empfohlene Methode:</strong> Alle Methoden kombiniert</div>';
+                }
+                
+                html += `<div class="result">📱 <strong>Android Version:</strong> ${androidVersion ? androidVersion[1] : 'unbekannt'}</div>`;
+                
+                html += '<h3>🔧 Browser-Details:</h3>';
+                html += `<pre>${JSON.stringify(testResults, null, 2)}</pre>`;
+                
+                html += '<h3>📋 User Agent:</h3>';
+                html += `<pre>${userAgent}</pre>`;
+                
+                results.innerHTML = html;
+            }, 500);
+        }
+
+        function testInstallCapabilities() {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div class="result">🧪 Teste Installation-Fähigkeiten...</div>';
+            
+            setTimeout(() => {
+                let capabilities = {
+                    serviceWorker: 'serviceWorker' in navigator,
+                    beforeInstallPrompt: 'BeforeInstallPromptEvent' in window,
+                    samsungAPI: !!(window.samsung && window.samsung.appInstallation),
+                    chromeWebstore: !!(window.chrome && window.chrome.webstore),
+                    pushManager: 'PushManager' in window,
+                    notifications: 'Notification' in window,
+                    standalone: window.matchMedia('(display-mode: standalone)').matches,
+                    protocol: window.location.protocol
+                };
+                
+                let html = '<h3>🧪 Installation-Fähigkeiten:</h3>';
+                for (let [key, value] of Object.entries(capabilities)) {
+                    const icon = value ? '✅' : '❌';
+                    html += `<div class="result">${icon} <strong>${key}:</strong> ${value}</div>`;
+                }
+                
+                results.innerHTML += html;
+                testResults.capabilities = capabilities;
+            }, 500);
+        }
+
+        function copyResults() {
+            const text = `Samsung Browser Test - ${new Date().toLocaleString('de-DE')}
+            
+Browser-Typ: ${testResults.isSamsungInternet ? 'Samsung Internet' : testResults.isSamsungChrome ? 'Samsung Chrome' : 'Anderer'}
+Samsung Version: ${testResults.samsungVersion || 'keine'}
+Chrome Version: ${testResults.chromeVersion || 'keine'}
+Android Version: ${testResults.androidVersion || 'keine'}
+
+User Agent:
+${testResults.userAgent}
+
+Installation-Fähigkeiten:
+${testResults.capabilities ? JSON.stringify(testResults.capabilities, null, 2) : 'Noch nicht getestet'}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Ergebnisse in Zwischenablage kopiert!');
+            }).catch(() => {
+                alert('❌ Kopieren fehlgeschlagen. Bitte manuell markieren und kopieren.');
+            });
+        }
+
+        // Auto-Test beim Laden
+        window.addEventListener('load', () => {
+            setTimeout(runBrowserTest, 1000);
+            setTimeout(testInstallCapabilities, 2000);
+        });
+    </script>
+</body>
+</html>
