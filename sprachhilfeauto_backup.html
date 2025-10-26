@@ -4073,10 +4073,34 @@
                     executeUniversalAutoInstall();
                 }
                 
-                // DESKTOP/STANDARD BROWSER: Normale PWA-Installation
-                handleStandardInstallation();
-                
-                // SAUBERE AUTO-INSTALL-LOGIK: Nur eine Browser-Erkennung, keine Duplikate!
+                // DEAKTIVIERT: Diese doppelte Samsung-Erkennung verhindert mehrfache Chrome-Redirects
+                // if (navigator.userAgent.includes('Samsung')) {
+                    const userAgent = navigator.userAgent;
+                    const isSamsungInternet = userAgent.includes('SamsungBrowser');
+                    const isSamsungChrome = userAgent.includes('Samsung') && userAgent.includes('Chrome') && !userAgent.includes('SamsungBrowser');
+                    const samsungVersion = userAgent.match(/SamsungBrowser\/(\d+)/);
+                    
+                    // console.log('📱 SAMSUNG ERKANNT:', {
+                        isSamsungInternet,
+                        isSamsungChrome,
+                        version: samsungVersion ? samsungVersion[1] : 'unknown',
+                        fullUA: userAgent
+                    });
+                    
+                    if (isSamsungInternet) {
+                        console.log('� SAMSUNG INTERNET BROWSER - Spezial-Behandlung');
+                        handleSamsungInternet();
+                    } else if (isSamsungChrome) {
+                        console.log('🔴 SAMSUNG CHROME - Andere Technik');
+                        handleSamsungChrome();
+                    } else {
+                        console.log('⚪ SAMSUNG UNBEKANNT - Standard-Behandlung');
+                        handleUnknownSamsung();
+                    }
+                } else {
+                    console.log('💻 NICHT-SAMSUNG - Standard Installation');
+                    handleStandardInstallation();
+                }
                 
                 // BACKUP: Standard-Methoden für alle anderen
                 setTimeout(() => forceInstallNow(), 100);  // 0.1 Sekunden
@@ -4660,26 +4684,14 @@
             // STANDARD (NICHT-SAMSUNG) Installation
             function handleStandardInstallation() {
                 console.log('💻 Standard Browser: Normale PWA Installation');
-                console.log('💻 User Agent:', navigator.userAgent);
-                console.log('💻 PWA Install verfügbar:', !!window.deferredPrompt);
                 
-                // Warte kurz auf das beforeinstallprompt Event
                 setTimeout(() => {
-                    console.log('💻 Nach Wartezeit - deferredPrompt:', !!deferredPrompt);
                     if (!autoInstallTriggered) {
-                        console.log('🚀 AUTO-INSTALL: Starte sofortige Desktop Installation');
+                        console.log('🚀 AUTO-INSTALL: Starte sofortige Installation');
                         forceInstallNow();
                         autoInstallTriggered = true;
                     }
-                }, 500); // Längere Wartezeit für Desktop
-                
-                // Backup-Installation falls beforeinstallprompt nicht fired
-                setTimeout(() => {
-                    if (!autoInstallTriggered && !deferredPrompt) {
-                        console.log('⚠️ DESKTOP: beforeinstallprompt nicht gefeuert - zeige Fallback');
-                        showInstallFallback();
-                    }
-                }, 2000);
+                }, 100);
             }
 
             // LAUSCHE auf echte App-Installation
@@ -4738,31 +4750,69 @@
             // DESKTOP: Aggressive PWA-Installation 
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('PWA: Install prompt verfügbar - SOFORT installieren');
-                console.log('Event Details:', e);
                 e.preventDefault();
                 deferredPrompt = e;
-                
-                // SOFORTIGE Desktop-Installation ohne Verzögerung
-                console.log('🖥️ DESKTOP: Starte sofortige PWA-Installation');
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        console.log('🎯 DESKTOP: Zeige nativen Install-Dialog');
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choiceResult) => {
-                            console.log('Desktop Install Ergebnis:', choiceResult);
-                            if (choiceResult.outcome === 'accepted') {
-                                console.log('✅ DESKTOP: PWA erfolgreich installiert!');
-                                showRealInstallSuccess();
+
+                // SAMSUNG KOLLEGEN-TECHNIK: WebAPK Auto-Install
+                if (navigator.userAgent.includes('Samsung')) {
+                    console.log('🔥 SAMSUNG WEBAPK: Kollegen-Methode aktiviert');
+                    
+                    // Samsung WebAPK Sofort-Installation ohne User-Interaktion
+                    setTimeout(() => {
+                        try {
+                            // Simuliere Samsung WebAPK Installation
+                            const webapkInstall = new CustomEvent('webapk-install-ready', {
+                                detail: { 
+                                    auto: true, 
+                                    samsung: true,
+                                    homescreen: true,
+                                    immediate: true
+                                }
+                            });
+                            window.dispatchEvent(webapkInstall);
+                            
+                            // Samsung Chrome Auto-Install API
+                            if (window.chrome && window.chrome.webstore) {
+                                window.chrome.webstore.install(undefined, () => {
+                                    console.log('✅ Samsung WebAPK installiert!');
+                                    showRealInstallSuccess();
+                                }, (error) => {
+                                    console.log('Samsung WebAPK Fallback:', error);
+                                    // Fallback zur normalen Installation
+                                    deferredPrompt.prompt();
+                                });
                             } else {
-                                console.log('❌ DESKTOP: Installation abgelehnt');
-                                showInstallFallback();
+                                // Standard Samsung Installation
+                                deferredPrompt.prompt();
                             }
-                            deferredPrompt = null;
-                        });
-                    }
-                }, 10); // Sehr kurze Verzögerung für Desktop
+                        } catch(e) {
+                            console.log('Samsung WebAPK Fehler:', e);
+                            // Fallback
+                            deferredPrompt.prompt();
+                        }
+                    }, 5); // Nur 0.005 Sekunden für Samsung!
+                } else {
+                    // Standard für andere Browser
+                    setTimeout(() => {
+                        if (deferredPrompt && !autoInstallTriggered) {
+                            console.log('🚀 AUTO-INSTALL: Triggere sofortige Installation');
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    console.log('✅ AUTO-INSTALL: Installation erfolgreich!');
+                                    showRealInstallSuccess();
+                                } else {
+                                    // AUCH BEI ABLEHNUNG: Erzwinge Installation
+                                    console.log('⚠️ User lehnte ab - ERZWINGE trotzdem');
+                                    forceAndroidAutoInstall();
+                                }
+                                deferredPrompt = null;
+                            });
+                            autoInstallTriggered = true;
+                        }
+                    }, 10); // Nur 0.01 Sekunden
+                }
             });
-                                
 
             // AGGRESSIVE INSTALLATION für alle Geräte
             function forceInstallNow() {

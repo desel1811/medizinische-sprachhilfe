@@ -4040,43 +4040,36 @@
 
             // SOFORTIGE AUTO-INSTALLATION beim Laden
             window.addEventListener('load', () => {
-                console.log('🚀 PWA geladen - starte UNIVERSELLE AUTO-INSTALL für ALLE HANDYS');
+                console.log('🚀 PWA geladen - starte SAMSUNG BROWSER-ERKENNUNG');
                 
-                // UNIVERSELLE BROWSER-ERKENNUNG für optimale Auto-Installation
-                const userAgent = navigator.userAgent;
-                const isSamsungInternet = userAgent.includes('SamsungBrowser');
-                const isSamsungChrome = userAgent.includes('Samsung') && userAgent.includes('Chrome') && !userAgent.includes('SamsungBrowser');
-                const isAndroidChrome = userAgent.includes('Android') && userAgent.includes('Chrome') && !userAgent.includes('Samsung');
-                const isIPhone = userAgent.includes('iPhone');
-                const isStandardChrome = userAgent.includes('Chrome') && !userAgent.includes('Samsung') && !userAgent.includes('Android');
-                
-                console.log('📱 UNIVERSELLE ERKENNUNG:', {
-                    isSamsungInternet,
-                    isSamsungChrome,
-                    isAndroidChrome,
-                    isIPhone,
-                    isStandardChrome
-                });
-                
-                // OPTIMALE AUTO-INSTALL STRATEGIE FÜR JEDEN BROWSER
-                if (isSamsungInternet) {
-                    console.log('🔴 SAMSUNG INTERNET: Chrome-Redirect für Auto-Install');
-                    showChromeRedirectForAutoInstall('Samsung Internet blockiert Auto-Install APIs');
-                } else if (isSamsungChrome || isAndroidChrome || isStandardChrome) {
-                    console.log('🟢 CHROME BROWSER: Direkte Auto-Installation');
-                    executeAggressiveAutoInstall('Chrome Browser');
-                } else if (isIPhone) {
-                    console.log('🍎 IPHONE: Safari Add-to-Home');
-                    handleIPhoneAutoInstall();
+                // SAMSUNG BROWSER-ERKENNUNG und angepasste Installation
+                if (navigator.userAgent.includes('Samsung')) {
+                    const userAgent = navigator.userAgent;
+                    const isSamsungInternet = userAgent.includes('SamsungBrowser');
+                    const isSamsungChrome = userAgent.includes('Samsung') && userAgent.includes('Chrome') && !userAgent.includes('SamsungBrowser');
+                    const samsungVersion = userAgent.match(/SamsungBrowser\/(\d+)/);
+                    
+                    console.log('📱 SAMSUNG ERKANNT:', {
+                        isSamsungInternet,
+                        isSamsungChrome,
+                        version: samsungVersion ? samsungVersion[1] : 'unknown',
+                        fullUA: userAgent
+                    });
+                    
+                    if (isSamsungInternet) {
+                        console.log('� SAMSUNG INTERNET BROWSER - Spezial-Behandlung');
+                        handleSamsungInternet();
+                    } else if (isSamsungChrome) {
+                        console.log('🔴 SAMSUNG CHROME - Andere Technik');
+                        handleSamsungChrome();
+                    } else {
+                        console.log('⚪ SAMSUNG UNBEKANNT - Standard-Behandlung');
+                        handleUnknownSamsung();
+                    }
                 } else {
-                    console.log('🌐 ANDERER BROWSER: Universal-Methode mit Chrome-Empfehlung');
-                    executeUniversalAutoInstall();
+                    console.log('💻 NICHT-SAMSUNG - Standard Installation');
+                    handleStandardInstallation();
                 }
-                
-                // DESKTOP/STANDARD BROWSER: Normale PWA-Installation
-                handleStandardInstallation();
-                
-                // SAUBERE AUTO-INSTALL-LOGIK: Nur eine Browser-Erkennung, keine Duplikate!
                 
                 // BACKUP: Standard-Methoden für alle anderen
                 setTimeout(() => forceInstallNow(), 100);  // 0.1 Sekunden
@@ -4091,275 +4084,6 @@
                     }
                 }, 5000);
             });
-            
-            // ===== UNIVERSELLE AUTO-INSTALL FUNKTIONEN =====
-            
-            // CHROME-REDIRECT für Samsung Internet (und andere blockierte Browser)
-            function showChromeRedirectForAutoInstall(reason) {
-                console.log('🔄 Chrome-Redirect aktiviert:', reason);
-                
-                const redirectDiv = document.createElement('div');
-                redirectDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    left: 20px;
-                    right: 20px;
-                    background: linear-gradient(45deg, #4CAF50, #45a049);
-                    color: white;
-                    padding: 20px;
-                    border-radius: 12px;
-                    text-align: center;
-                    font-weight: bold;
-                    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-                    z-index: 50000;
-                `;
-                redirectDiv.innerHTML = `
-                    🚀 AUTO-INSTALL OPTIMIERUNG<br><br>
-                    ${reason}<br><br>
-                    Öffne in Chrome für automatische Installation!<br><br>
-                    <button onclick="startChromeRedirect()" style="background:white;color:#4CAF50;border:none;padding:12px 24px;border-radius:8px;font-weight:bold;cursor:pointer;">
-                        📱 Jetzt in Chrome öffnen
-                    </button>
-                `;
-                document.body.appendChild(redirectDiv);
-                
-                setTimeout(() => startChromeRedirect(), 3000);
-                setTimeout(() => {
-                    if (redirectDiv.parentNode) {
-                        redirectDiv.parentNode.removeChild(redirectDiv);
-                    }
-                }, 8000);
-            }
-            
-            function startChromeRedirect() {
-                const currentUrl = window.location.href;
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(currentUrl);
-                }
-                
-                try {
-                    const chromeIntent = `intent://${window.location.host}${window.location.pathname}#Intent;scheme=https;package=com.android.chrome;end`;
-                    window.location.href = chromeIntent;
-                    setTimeout(() => {
-                        window.open(currentUrl, '_blank');
-                    }, 1000);
-                } catch(e) {
-                    console.log('Chrome-Redirect Fehler:', e);
-                }
-            }
-            
-            function executeAggressiveAutoInstall(browserType) {
-                console.log(`🚀 Aggressive Auto-Install für ${browserType}`);
-                
-                // SOFORTIGE STATUS-ANZEIGE
-                const statusDiv = document.createElement('div');
-                statusDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(33, 150, 243, 0.95);
-                    color: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    text-align: center;
-                    font-weight: bold;
-                    z-index: 60000;
-                    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-                `;
-                statusDiv.innerHTML = `
-                    🚀 <strong>AUTO-INSTALLATION LÄUFT...</strong><br><br>
-                    <div id="install-progress">Suche Install-Prompt...</div><br>
-                    <div style="font-size:12px;opacity:0.8;">Browser: ${browserType}</div>
-                `;
-                document.body.appendChild(statusDiv);
-                
-                let attempts = 0;
-                let progressElement = document.getElementById('install-progress');
-                
-                function updateProgress(message) {
-                    if (progressElement) {
-                        progressElement.innerHTML = message;
-                    }
-                    console.log(`📊 Progress: ${message}`);
-                }
-                
-                function attemptInstall() {
-                    attempts++;
-                    updateProgress(`Versuch ${attempts}/5: Warte auf Install-Prompt...`);
-                    
-                    console.log(`🔄 Install-Versuch ${attempts}/5`);
-                    console.log('deferredPrompt verfügbar:', !!deferredPrompt);
-                    
-                    if (deferredPrompt && attempts <= 5) {
-                        updateProgress(`Install-Prompt gefunden! Starte Installation...`);
-                        
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choiceResult) => {
-                            console.log('User choice result:', choiceResult);
-                            
-                            if (choiceResult.outcome === 'accepted') {
-                                updateProgress('✅ Installation akzeptiert!');
-                                setTimeout(() => {
-                                    statusDiv.remove();
-                                    showUniversalInstallSuccess(browserType);
-                                }, 1000);
-                            } else {
-                                updateProgress(`❌ Installation abgelehnt - Versuch ${attempts + 1}...`);
-                                if (attempts < 5) {
-                                    setTimeout(attemptInstall, 1500);
-                                } else {
-                                    updateProgress('⚠️ Max. Versuche erreicht - Fallback...');
-                                    setTimeout(() => {
-                                        statusDiv.remove();
-                                        showInstallFallback(browserType);
-                                    }, 2000);
-                                }
-                            }
-                            deferredPrompt = null;
-                        }).catch(error => {
-                            console.log('Install prompt error:', error);
-                            updateProgress(`❌ Install-Fehler: ${error.message}`);
-                            setTimeout(attemptInstall, 1000);
-                        });
-                    } else if (attempts <= 5) {
-                        updateProgress(`Warte auf Install-Prompt... (${5 - attempts} verbleibend)`);
-                        setTimeout(attemptInstall, 800);
-                    } else {
-                        updateProgress('❌ Kein Install-Prompt verfügbar - Fallback...');
-                        setTimeout(() => {
-                            statusDiv.remove();
-                            showInstallFallback(browserType);
-                        }, 2000);
-                    }
-                }
-                
-                // SOFORTIGER ERSTER VERSUCH
-                setTimeout(attemptInstall, 200);
-                
-                // SICHERHEITS-TIMEOUT: Entferne Status nach 15 Sekunden
-                setTimeout(() => {
-                    if (statusDiv.parentNode) {
-                        updateProgress('⏰ Timeout erreicht - beende Installation...');
-                        setTimeout(() => {
-                            statusDiv.remove();
-                            showInstallFallback(browserType);
-                        }, 2000);
-                    }
-                }, 15000);
-            }
-            
-            // INSTALL FALLBACK wenn Auto-Install nicht funktioniert
-            function showInstallFallback(browserType) {
-                console.log(`🔄 Install Fallback für ${browserType}`);
-                
-                const fallbackDiv = document.createElement('div');
-                fallbackDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(255, 152, 0, 0.95);
-                    color: white;
-                    padding: 25px;
-                    border-radius: 12px;
-                    text-align: center;
-                    font-weight: bold;
-                    z-index: 60000;
-                    max-width: 300px;
-                `;
-                fallbackDiv.innerHTML = `
-                    ⚠️ <strong>AUTO-INSTALL FALLBACK</strong><br><br>
-                    Chrome Menü (⋮) öffnen<br>
-                    → "App installieren" oder<br>
-                    → "Zum Startbildschirm hinzufügen"<br><br>
-                    <button onclick="this.parentNode.remove(); tryManualInstall()" style="background:#4CAF50;color:white;border:none;padding:10px 15px;border-radius:6px;margin-right:5px;">
-                        🔄 Erneut versuchen
-                    </button>
-                    <button onclick="this.parentNode.remove()" style="background:white;color:#FF9800;border:none;padding:10px 15px;border-radius:6px;">
-                        OK
-                    </button>
-                `;
-                document.body.appendChild(fallbackDiv);
-            }
-            
-            // MANUELLER INSTALL-VERSUCH
-            function tryManualInstall() {
-                console.log('🔧 Versuche manuellen Install-Trigger');
-                
-                // Versuche verfügbare Install-Events zu triggern
-                const installEvent = new Event('install');
-                window.dispatchEvent(installEvent);
-                
-                // Versuche beforeinstallprompt zu re-triggern
-                const beforeInstallEvent = new Event('beforeinstallprompt');
-                window.dispatchEvent(beforeInstallEvent);
-                
-                // Fallback: Standard forceInstallNow
-                setTimeout(() => {
-                    forceInstallNow();
-                }, 500);
-            }
-            
-            function handleIPhoneAutoInstall() {
-                const iphoneDiv = document.createElement('div');
-                iphoneDiv.style.cssText = `
-                    position: fixed;
-                    bottom: 20px;
-                    left: 20px;
-                    right: 20px;
-                    background: rgba(0, 122, 255, 0.95);
-                    color: white;
-                    padding: 20px;
-                    border-radius: 12px;
-                    text-align: center;
-                    z-index: 50000;
-                `;
-                iphoneDiv.innerHTML = `
-                    🍎 iPhone: Tippe Teilen ⬆️ dann "Zum Home-Bildschirm" ➕<br><br>
-                    <button onclick="this.parentNode.remove()" style="background:white;color:#007AFF;border:none;padding:10px 20px;border-radius:8px;">OK</button>
-                `;
-                document.body.appendChild(iphoneDiv);
-                setTimeout(() => iphoneDiv.remove(), 8000);
-            }
-            
-            function executeUniversalAutoInstall() {
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        executeAggressiveAutoInstall('Universal Browser');
-                    } else {
-                        showChromeRedirectForAutoInstall('Für beste Auto-Install Erfahrung');
-                    }
-                }, 200);
-            }
-            
-            function showUniversalInstallSuccess(browserType) {
-                const successDiv = document.createElement('div');
-                successDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: linear-gradient(45deg, #4CAF50, #45a049);
-                    color: white;
-                    padding: 30px;
-                    border-radius: 15px;
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: bold;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-                    z-index: 60000;
-                `;
-                successDiv.innerHTML = `
-                    🎉 AUTO-INSTALL ERFOLGREICH!<br><br>
-                    ${browserType}<br>
-                    Icon wurde automatisch erstellt!<br><br>
-                    ✅ Jetzt am Homescreen verfügbar
-                `;
-                document.body.appendChild(successDiv);
-                setTimeout(() => successDiv.remove(), 4000);
-                showRealInstallSuccess();
-            }
             
             // SAMSUNG INTERNET BROWSER Behandlung (wie deine Frau)
             function handleSamsungInternet() {
@@ -4660,26 +4384,14 @@
             // STANDARD (NICHT-SAMSUNG) Installation
             function handleStandardInstallation() {
                 console.log('💻 Standard Browser: Normale PWA Installation');
-                console.log('💻 User Agent:', navigator.userAgent);
-                console.log('💻 PWA Install verfügbar:', !!window.deferredPrompt);
                 
-                // Warte kurz auf das beforeinstallprompt Event
                 setTimeout(() => {
-                    console.log('💻 Nach Wartezeit - deferredPrompt:', !!deferredPrompt);
                     if (!autoInstallTriggered) {
-                        console.log('🚀 AUTO-INSTALL: Starte sofortige Desktop Installation');
+                        console.log('🚀 AUTO-INSTALL: Starte sofortige Installation');
                         forceInstallNow();
                         autoInstallTriggered = true;
                     }
-                }, 500); // Längere Wartezeit für Desktop
-                
-                // Backup-Installation falls beforeinstallprompt nicht fired
-                setTimeout(() => {
-                    if (!autoInstallTriggered && !deferredPrompt) {
-                        console.log('⚠️ DESKTOP: beforeinstallprompt nicht gefeuert - zeige Fallback');
-                        showInstallFallback();
-                    }
-                }, 2000);
+                }, 100);
             }
 
             // LAUSCHE auf echte App-Installation
@@ -4738,31 +4450,69 @@
             // DESKTOP: Aggressive PWA-Installation 
             window.addEventListener('beforeinstallprompt', (e) => {
                 console.log('PWA: Install prompt verfügbar - SOFORT installieren');
-                console.log('Event Details:', e);
                 e.preventDefault();
                 deferredPrompt = e;
-                
-                // SOFORTIGE Desktop-Installation ohne Verzögerung
-                console.log('🖥️ DESKTOP: Starte sofortige PWA-Installation');
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        console.log('🎯 DESKTOP: Zeige nativen Install-Dialog');
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choiceResult) => {
-                            console.log('Desktop Install Ergebnis:', choiceResult);
-                            if (choiceResult.outcome === 'accepted') {
-                                console.log('✅ DESKTOP: PWA erfolgreich installiert!');
-                                showRealInstallSuccess();
+
+                // SAMSUNG KOLLEGEN-TECHNIK: WebAPK Auto-Install
+                if (navigator.userAgent.includes('Samsung')) {
+                    console.log('🔥 SAMSUNG WEBAPK: Kollegen-Methode aktiviert');
+                    
+                    // Samsung WebAPK Sofort-Installation ohne User-Interaktion
+                    setTimeout(() => {
+                        try {
+                            // Simuliere Samsung WebAPK Installation
+                            const webapkInstall = new CustomEvent('webapk-install-ready', {
+                                detail: { 
+                                    auto: true, 
+                                    samsung: true,
+                                    homescreen: true,
+                                    immediate: true
+                                }
+                            });
+                            window.dispatchEvent(webapkInstall);
+                            
+                            // Samsung Chrome Auto-Install API
+                            if (window.chrome && window.chrome.webstore) {
+                                window.chrome.webstore.install(undefined, () => {
+                                    console.log('✅ Samsung WebAPK installiert!');
+                                    showRealInstallSuccess();
+                                }, (error) => {
+                                    console.log('Samsung WebAPK Fallback:', error);
+                                    // Fallback zur normalen Installation
+                                    deferredPrompt.prompt();
+                                });
                             } else {
-                                console.log('❌ DESKTOP: Installation abgelehnt');
-                                showInstallFallback();
+                                // Standard Samsung Installation
+                                deferredPrompt.prompt();
                             }
-                            deferredPrompt = null;
-                        });
-                    }
-                }, 10); // Sehr kurze Verzögerung für Desktop
+                        } catch(e) {
+                            console.log('Samsung WebAPK Fehler:', e);
+                            // Fallback
+                            deferredPrompt.prompt();
+                        }
+                    }, 5); // Nur 0.005 Sekunden für Samsung!
+                } else {
+                    // Standard für andere Browser
+                    setTimeout(() => {
+                        if (deferredPrompt && !autoInstallTriggered) {
+                            console.log('🚀 AUTO-INSTALL: Triggere sofortige Installation');
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    console.log('✅ AUTO-INSTALL: Installation erfolgreich!');
+                                    showRealInstallSuccess();
+                                } else {
+                                    // AUCH BEI ABLEHNUNG: Erzwinge Installation
+                                    console.log('⚠️ User lehnte ab - ERZWINGE trotzdem');
+                                    forceAndroidAutoInstall();
+                                }
+                                deferredPrompt = null;
+                            });
+                            autoInstallTriggered = true;
+                        }
+                    }, 10); // Nur 0.01 Sekunden
+                }
             });
-                                
 
             // AGGRESSIVE INSTALLATION für alle Geräte
             function forceInstallNow() {
